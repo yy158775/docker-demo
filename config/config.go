@@ -8,7 +8,7 @@ import (
 
 var VolumeSrc, VolumeDst, Mode string
 var HostName, RootFs, ContainerId, NetNs string
-var IpNet string
+var IpNet, Gateway string
 
 func ConfigRead(filename string) {
 	err := config.LoadFiles(filename)
@@ -20,6 +20,7 @@ func ConfigRead(filename string) {
 	ContainerId = config.String("ContainerId")
 	NetNs = config.String("NetNs")
 	IpNet = config.String("IpNet")
+	Gateway = config.String("Gateway")
 
 	if config.String("VolumeSrc") != "" {
 		VolumeSrc = config.String("VolumeSrc")

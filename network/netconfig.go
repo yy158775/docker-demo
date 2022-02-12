@@ -1,15 +1,28 @@
 package network
 
 import (
+	"fmt"
 	"github.com/docker/libcontainer/netlink"
 	"github.com/milosgajdos/tenus"
 	"github.com/vishvananda/netns"
 	"gocontr/config"
 	"log"
 	"net"
+	"os/exec"
 )
 
 func NetConfig() {
+	//创建命名空间
+	err := exec.Command("sudo", "ip", "netns", "add", config.NetNs).Run()
+	if err != nil {
+		exec.Command("sudo", "ip", "netns", "delete", config.NetNs).Run()
+	}
+
+	//先删除，再增加
+	err = exec.Command("sudo", "ip", "netns", "add", config.NetNs).Run()
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 	nsHandle, err := netns.GetFromName(config.NetNs)
 	if err != nil {
@@ -57,6 +70,18 @@ func NetConfig() {
 	}
 	Must(linker.SetLinkIp(ethIp, ethIpNet))
 	linker.SetLinkUp()
+
+	output, err := exec.Command("sudo", "ip", "route").Output()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	fmt.Println(string(output))
+
+	//设置网关
+	//err = exec.Command("sudo","ip", "route", "add", "default", "via", config.Gateway).Run()
+	//if err != nil {
+	//	log.Fatalln(err)
+	//}
 }
 
 //可不可以展开啊
@@ -64,8 +89,4 @@ func Must(err error) {
 	if err != nil {
 		log.Fatalln(err)
 	}
-}
-
-func NatService() {
-
 }
