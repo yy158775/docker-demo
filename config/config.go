@@ -26,5 +26,4 @@ func ConfigRead(filename string) {
 		VolumeDst = config.String("VolumeDst")
 		Mode = config.String("Mode")
 	}
-
 }

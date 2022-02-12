@@ -18,8 +18,6 @@ func main() {
 		parent()
 	case "child":
 		child()
-	case "net":
-		network.Netnsconfig(os.Args[2], os.Args[3])
 	default:
 		panic("error")
 	}
@@ -40,6 +38,8 @@ func parent() {
 }
 
 func child() {
+	getwd, _ := os.Getwd()
+	log.Println("Dir:", getwd)
 	//初始化
 	config.ConfigRead(os.Args[2])
 	//json文件名
