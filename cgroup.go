@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/binary"
+	"gocontr/config"
 	"os"
 	"strings"
 )
@@ -24,7 +25,7 @@ func LimitResource() {
 func CreatePidCgroup() {
 	var builder strings.Builder
 	builder.WriteString(DIR_CGROUP_PIDS)
-	builder.WriteString(ContainerId)
+	builder.WriteString(config.ContainerId)
 	path := builder.String()
 
 	os.Mkdir(path, os.ModePerm)
@@ -45,7 +46,7 @@ func CreatePidCgroup() {
 func CreateMemCgroup() {
 	var builder strings.Builder
 	builder.WriteString(DIR_CGROUP_MEM)
-	builder.WriteString(ContainerId)
+	builder.WriteString(config.ContainerId)
 	path := builder.String()
 
 	os.Mkdir(path, os.ModePerm)

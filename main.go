@@ -1,24 +1,25 @@
 package main
 
 import (
-	"fmt"
+	"gocontr/config"
+	"gocontr/network"
+	"gocontr/volume"
 	"log"
 	"os"
 	"os/exec"
 	"syscall"
 )
 
-var ContainerId string
-var RootFs string
-var HostName string
-var NetNs string
-
 func main() {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+
 	switch os.Args[1] {
 	case "run":
 		parent()
 	case "child":
 		child()
+	case "net":
+		network.Netnsconfig(os.Args[2], os.Args[3])
 	default:
 		panic("error")
 	}
@@ -27,37 +28,40 @@ func main() {
 func parent() {
 	cmd := exec.Command("/proc/self/exe", append([]string{"child"}, os.Args[2:]...)...)
 	cmd.SysProcAttr = &syscall.SysProcAttr{
-		Cloneflags: syscall.CLONE_NEWNS | syscall.CLONE_NEWPID | syscall.CLONE_NEWUTS | syscall.CLONE_NEWNET,
+		Cloneflags: syscall.CLONE_NEWNS | syscall.CLONE_NEWPID | syscall.CLONE_NEWUTS,
 	}
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err := cmd.Run()
 	if err != nil {
-		fmt.Println("Parent ERROR:", err)
-		os.Exit(1)
+		log.Fatalln(err)
 	}
 }
 
 func child() {
 	//初始化
-	ConfigRead(os.Args[2])
+	config.ConfigRead(os.Args[2])
 	//json文件名
-
+	if config.VolumeSrc != "" {
+		volume.MountVolume(config.VolumeSrc, config.VolumeDst, config.Mode)
+	}
 	//NetConfig()
 	LimitResource()
-	JoinNetworkNs(NetNs)
+	network.NetConfig()
+	//JoinNetworkNs(config.NetNs)
 
 	SetupRootfs()
 	SetHostname()
 
 	MountProc()
 
+	log.Println("Create exec")
 	ExecProcess()
 }
 
 func SetHostname() {
-	if err := syscall.Sethostname([]byte(HostName)); err != nil {
+	if err := syscall.Sethostname([]byte(config.HostName)); err != nil {
 		log.Fatalln("SetHostName Error:", err)
 	}
 }

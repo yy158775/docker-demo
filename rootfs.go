@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
+	"gocontr/config"
 	"syscall"
 )
 
 func SetupRootfs() {
-	if err := syscall.Chroot(RootFs); err != nil {
+	if err := syscall.Chroot(config.RootFs); err != nil {
 		fmt.Println("Chroot error:", err)
 		syscall.Exit(1)
 	}

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/vishvananda/netns"
+	//"github.com/vishvananda/netns"
 	"log"
 	"strings"
 	"syscall"
@@ -17,14 +17,14 @@ func JoinNetworkNs(nsp string) {
 	builder := strings.Builder{}
 	builder.WriteString(DIR_NETNS)
 	builder.WriteString(nsp)
-	path := builder.String()
-	nsHandler, err := netns.GetFromPath(path)
-	if err != nil {
-		log.Fatalln(nsp + "not found")
-	}
-	if err := netns.Set(nsHandler); err != nil {
-		log.Fatalln("netns Set error:", err)
-	}
+	//path := builder.String()
+	//nsHandler, err := netns.GetFromPath(path)
+	//if err != nil {
+	//	log.Fatalln(nsp + "not found")
+	//}
+	//if err := netns.Set(nsHandler); err != nil {
+	//	log.Fatalln("netns Set error:", err)
+	//}
 }
 
 func MountProc() {
