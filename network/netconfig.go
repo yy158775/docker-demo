@@ -1,7 +1,6 @@
 package network
 
 import (
-	"fmt"
 	"github.com/docker/libcontainer/netlink"
 	"github.com/milosgajdos/tenus"
 	"github.com/vishvananda/netns"
@@ -15,13 +14,7 @@ func NetConfig() {
 	//创建命名空间
 	err := exec.Command("sudo", "ip", "netns", "add", config.NetNs).Run()
 	if err != nil {
-		exec.Command("sudo", "ip", "netns", "delete", config.NetNs).Run()
-	}
-
-	//先删除，再增加
-	err = exec.Command("sudo", "ip", "netns", "add", config.NetNs).Run()
-	if err != nil {
-		log.Fatalln(err)
+		log.Printf("The Network Namespace %s has existed\n", config.NetNs)
 	}
 
 	nsHandle, err := netns.GetFromName(config.NetNs)
@@ -29,7 +22,33 @@ func NetConfig() {
 		log.Fatalln(err)
 	}
 
-	bridge, err := tenus.BridgeFromName("test0")
+	//获取bridge
+	bridge, err := tenus.BridgeFromName(config.Bridge)
+
+	//如果没有test0
+	if err != nil {
+		err = exec.Command("sudo", "ip", "link", "add", "test0", "type", "bridge").Run()
+		if err != nil {
+			log.Fatalln(err)
+		}
+		bridge, err = tenus.BridgeFromName("test0")
+		if err != nil {
+			log.Fatalln(err)
+		}
+
+		//配置IP地址
+		ip, ipnet, err := net.ParseCIDR(config.Gateway)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		err = bridge.SetLinkIp(ip, ipnet)
+		if err != nil {
+			log.Fatalln(err)
+		}
+	}
+
+	err = bridge.SetLinkUp()
+
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -47,8 +66,6 @@ func NetConfig() {
 
 	Must(pair.SetPeerLinkUp())
 
-	Must(bridge.SetLinkUp())
-
 	log.Println("newns finished")
 
 	//设置命名空间
@@ -59,7 +76,7 @@ func NetConfig() {
 		log.Fatalln(err)
 	}
 
-	ethIp, ethIpNet, err := net.ParseCIDR("10.0.41.2/24")
+	ethIp, ethIpNet, err := net.ParseCIDR(config.IpNet)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -75,8 +92,7 @@ func NetConfig() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	fmt.Println(string(output))
-
+	log.Println(string(output))
 	//设置网关
 	//err = exec.Command("sudo","ip", "route", "add", "default", "via", config.Gateway).Run()
 	//if err != nil {

@@ -44,10 +44,13 @@ func child() {
 	log.Println("Dir:", getwd)
 	//初始化
 	config.ConfigRead(os.Args[2])
+
+	//chroot 之前 因为我已经拼接过了
 	//json文件名
-	if config.VolumeSrc != "" {
-		volume.MountVolume(config.VolumeSrc, config.VolumeDst, config.Mode)
+	if config.VolumeFrom != "" {
+		volume.MountVolume(config.VolumeFrom, config.VolumeTo, config.Mode)
 	}
+
 	//NetConfig()
 	LimitResource()
 	network.NetConfig()
