@@ -57,7 +57,7 @@ Host: Open the Nat.
 iptables \
 	-t nat \
 	-A POSTROUTING \
-	-s $GatewayIp \
+	-s $GatewayIp/CIDR \ 
 	-j MASQUERADE
 ```
 
